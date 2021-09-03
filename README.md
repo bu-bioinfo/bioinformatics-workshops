@@ -11,13 +11,13 @@
 #### 2. [Programming in R]
 *Desc*
 
-#### 3. [Programming in Python](workshops/python-programming/README.md)
+#### 3. [Programming in Python](workshops/python-programming)
 *Introduction to Python*
 
 #### 4. [Git & snakemake]
 *Desc*
 
-#### 5. [Data visualization](workshops/{data-visualization}/README.md)
+#### 5. [Data visualization](workshops/data-visualization)
 *Data visualization in R and Python*
 
 #### 6. [Machine learning]
