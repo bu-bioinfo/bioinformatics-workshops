@@ -1,0 +1,31 @@
+---
+output: rmarkdown::github_document
+editor_options: 
+  chunk_output_type: console
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(message=FALSE, comment="")
+```
+
+```{r}
+library(reticulate)
+```
+
+# Example
+You can use Jupyter but R Markdown is sort of nice too...
+
+```{python}
+print("Hello world")
+```
+
+## List comprehension
+```{python}
+DNA = "ATCGACGCTAGCATCAG"
+GC = [x for x in DNA if x == "C" or x == "G"]
+print(GC)
+GC_content = round(len(GC)/len(DNA)*100, 2)
+print("GC Content {}%".format(GC_content))
+```
