@@ -6,7 +6,7 @@
 *Desc*
 
 #### 1. [BASH & The SCC]
-*Desc*
+* Workshop slides [here](https://docs.google.com/presentation/d/12SSZBeRLhIlu3_OUCLQn3WX9UWC4NCXjF7MD0xUmtwY/edit#slide=id.gf0318373bd_0_186)
 
 #### 2. [Programming in R]
 *Desc*
