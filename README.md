@@ -8,8 +8,8 @@
 #### 1. [BASH & The SCC]
 * Workshop slides [here](https://docs.google.com/presentation/d/12SSZBeRLhIlu3_OUCLQn3WX9UWC4NCXjF7MD0xUmtwY/edit#slide=id.gf0318373bd_0_186)
 
-#### 2. [Programming in R]
-*Desc*
+#### 2. [Programming in R](workshops/r-programming)
+*Introduction to R*
 
 #### 3. [Programming in Python](workshops/python-programming)
 *Introduction to Python*
