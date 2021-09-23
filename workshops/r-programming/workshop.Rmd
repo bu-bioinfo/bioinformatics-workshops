@@ -6,10 +6,11 @@ output:
     toc: true
 ---
 
-```{r "set-options", include=FALSE, echo=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r echo=FALSE, message=FALSE}
+knitr::opts_chunk$set(message=FALSE, comment="")
 options(width=120)
-require("knitr")
 ```
 
 In this workshop, we will focus on learning how to load packages, import data, perform exploratory analysis with built in functions as well as functions from packages installed, performing differential expression analysis of RNA-seq data with the DESeq2 package, and visualizing the results using ggplot2.
@@ -17,36 +18,20 @@ In this workshop, we will focus on learning how to load packages, import data, p
 # Install and load packages
 We will begin by loading the necessary packages: 
 
-Go ahead and install these packages using install.packages():
-
-readr
-
-ggplot2
-
-dplyr
-
-magrittr
-
-We will use packages from the bioconductor repository, which provides tools for analysis of high-throughput genomic data.
-source("https://bioconductor.org/biocLite.R")
-
-Use bioclite("package_name") function to install packages SummarizedExperiment, DESeq2 and airway.
-
-
-```{r "install"}
+```{r "install", eval=FALSE}
 packages <- c("readr", "ggplot2", "dplyr", "magrittr")
 install.packages(packages, dependencies = TRUE)
 
-source("https://bioconductor.org/biocLite.R")
-biocLite("SummarizedExperiment", dependencies = TRUE)
-biocLite("DESeq2", dependencies = TRUE)
-biocLite("airway", dependencies = TRUE)
-
+# Install packages from Bioconductor
+install.packages("BiocManager")
+BiocManager::install("SummarizedExperiment")
+BiocManager::install("DESeq2")
+BiocManager::install("airway")
 ```
 
 Load these libraries using library("package_name") function:
 
-```{r "setup"}
+```{r "setup", echo=FALSE}
 library(readr)
 library(dplyr)
 library(ggplot2)
@@ -60,7 +45,7 @@ If you have not downloaded the R_Workshop folder already, please do that now.
 
 Let's begin first by setting our working directory. Set your working directory to where the R_Workshop folder is located on your computer.
 
-```{r "set working directory", eval = FALSE}
+```{r "set working directory", eval=FALSE}
 #Find working directory
 getwd()
 
@@ -78,22 +63,30 @@ Note: The sequencing files of this experiment are available on the GEO database 
 Use the read.csv("file") function import the airway_scalecounts.csv (count data) and airway_metadata.csv (meta data) files from the downloaded folder R_Workshop.
 
 ```{r 'import files'}
-# Use  read.csv() function to import airway_scaledcounts.csv and airway_metadata.csv files into R
+# Use  read.csv() function to import 
+# - data/airway_scaledcounts.csv
+# - data/airway_metadata.csv files into R
+```
+
+```{r include=FALSE}
+scaledcounts <- read.csv("data/airway_scaledcounts.csv")
+metadata <-  read.csv("data/airway_metadata.csv")
 ```
 
 Use base functions to describe and look at the airway data: scaledcounts and metadata.
 
 dim() - Dimensions
-
 head() - Print first lines of data
-
 tail() - Print last few lines of data
-
 str() - Describe data object structure and information
-
 
 ```{r 'check data'}
 # Use base functions to gain an initial view of the data
+```
+
+```{r echo=FALSE}
+head(metadata)
+head(scaledcounts)
 ```
 
 # Working with `data.frame` objects
@@ -104,12 +97,22 @@ Looking at `scaledcounts` we can see that the first column, "ensgene", gives the
 # Use the `ensgene` column to extract the gene expression values for "ENSG00000002549".
 ```
 
+```{r echo=FALSE}
+scaledcounts[scaledcounts$ensgene == "ENSG00000002549",]
+```
+
 This is okay, but a little clunky. Alternatively we can set the gene identifiers as row names to index rows directly.
 
 ```{r 'index by rowname'}
 # 1  Set the gene identifiers to row names in `scaledcounts`.
 # 2  Remove the `ensgene` column.
 # 3  Extract the gene expression values using the string "ENSG00000002549" directly.
+```
+
+```{r echo=FALSE}
+rownames(scaledcounts) <- scaledcounts$ensgene
+scaledcounts$ensgene <- NULL
+head(scaledcounts["ENSG00000002549",])
 ```
 
 ### Asking R for help
@@ -122,7 +125,12 @@ Alternative to steps 1 + 2 above, we could have set gene identifiers to row name
 # 2 Use these instructions to reread in `scaledcounts` and set the gene identifiers to row names automatically.
 ```
 
-# Working with `matrix ` objects
+```{r echo=FALSE}
+scaledcounts <- read.csv("data/airway_scaledcounts.csv", row.names=1)
+head(scaledcounts)
+```
+
+# Working with `matrix` objects
 
 The main difference between a `data.frame` object and a `matrix` object is that each column of a `data.frame` is free to have it's own format, whereas all values within an entire `matrix` must have the same format. One nice thing about `matrix` objects is that functions in R can be applied to all values at once. Note, that after setting the gene identifiers to row names, each value in `scaledcounts` is now a number. 
 
@@ -134,6 +142,84 @@ For gene expression it is common to work with log-scaled count data because thes
 # 2 Add a pseudocount to every value.
 
 # 3 Use the `log2()` function to log-scale the matrix.
+```
+
+```{r echo=FALSE}
+scaledcounts_log2 <- log2(as.matrix(scaledcounts)+1)
+```
+
+```{r}
+head(scaledcounts_log2)
+```
+
+## Plot the distibutions before and after log-transformation
+
+```{r}
+# your code here
+```
+
+```{r echo=FALSE}
+par(mfrow=c(1,2))
+col <- RColorBrewer::brewer.pal(8, "PiYG")
+boxplot(as.matrix(scaledcounts), las=2, col=col, main="Counts")
+boxplot(scaledcounts_log2, las=2, col=col, main="Log-transformed Counts")
+```
+
+# Dimensionality Reduction
+
+## Feature selection
+
+First find the 1000 most varying genes
+
+```{r}
+# your code here
+```
+
+```{r echo=FALSE}
+varying_genes <- sort(apply(scaledcounts_log2, 1, var), decreasing=TRUE)[1:1000]
+```
+
+```{r}
+head(varying_genes)
+length(varying_genes)
+```
+
+Subset the log-transformed counts with them.
+
+```{r}
+# your code here
+```
+
+```{r echo=FALSE}
+scaledcounts_log2_var <- scaledcounts_log2[names(varying_genes),]
+```
+
+```{r}
+dim(scaledcounts_log2_var)
+head(scaledcounts_log2_var)
+```
+
+## PCA
+
+Here is some example code for reducing the dimensionality of the data using Principal Component Analysis (PCA). We can use PCA to visualize the similarity between the samples and their metadata.
+
+```{r}
+pca <- prcomp(t(scaledcounts_log2_var), scale=TRUE)
+pca.summary <- summary(pca)
+pca.summary$importance[,1:5]
+pca.df <- cbind(data.frame(PC1=pca$x[,"PC1"], PC2=pca$x[,"PC2"]), metadata)
+head(pca.df)
+```
+Using `pca.df` plot the first and second principle components and color the data points by cell type.
+
+```{r}
+# your code here
+```
+
+```{r, echo=FALSE}
+ggplot(pca.df, aes(x=PC1, y=PC2, colour=celltype)) +
+geom_point(size=5) +
+theme_bw()
 ```
 
 # Running simple comparative statistical analyses
