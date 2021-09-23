@@ -2,7 +2,7 @@
 
 ### Table of Contents
 
-#### 0. [Introduction & Setup]
+#### 0. [Introduction & Setup](workshops/introduction-setup)
 *Welcome to the bioinformatics workshops - organized and taught by your program peers. To get the most out of the in-person workshop sessions, please make sure your personal device is setup and ready to go with the correct software and configurations.*
 
 #### 1. [BASH & The SCC]
