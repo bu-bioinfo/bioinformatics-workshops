@@ -17,8 +17,14 @@ R Workshop: RNA-seq Airway Data and Differential Expression Analysis
       - [Apply loops](#apply-loops)
       - [Matrix operations](#matrix-operations)
   - [Loading data from an R package](#loading-data-from-an-r-package)
-  - [Gene Set Enrichment using
-    enrichR](#gene-set-enrichment-using-enrichr)
+  - [Install packages from
+    Bioconductor](#install-packages-from-bioconductor)
+  - [Gene Set Enrichment Analysis](#gene-set-enrichment-analysis)
+      - [Downloading genesets](#downloading-genesets)
+      - [A signature of differentially expressed
+        genes](#a-signature-of-differentially-expressed-genes)
+      - [Fast GSEA](#fast-gsea)
+      - [Gene Symbols](#gene-symbols)
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
@@ -32,20 +38,19 @@ results using ggplot2.
 
 We will begin by loading the necessary packages:
 
+  - `readr`
+  - `magrittr`
+  - `dplyr`
+  - `ggplot2`
+
+<!-- end list -->
+
 ``` r
 packages <- c("readr", "ggplot2", "dplyr", "magrittr")
 install.packages(packages, dependencies = TRUE)
-
-# Install packages from Bioconductor
-install.packages("BiocManager")
-BiocManager::install("SummarizedExperiment")
-BiocManager::install("DESeq2")
-BiocManager::install("airway")
 ```
 
 Load these libraries using library(“package\_name”) function:
-
-    Warning: multiple methods tables found for 'which'
 
 If you have not downloaded the R\_Workshop folder already, please do
 that now.
@@ -436,6 +441,21 @@ indepedently test the relationships to \(X\).
 
 # Loading data from an R package
 
+# Install packages from Bioconductor
+
+``` r
+install.packages("BiocManager")
+BiocManager::install("SummarizedExperiment")
+BiocManager::install("DESeq2")
+BiocManager::install("airway")
+```
+
+``` r
+library(SummarizedExperiment)
+library(DESeq2)
+library(airway)
+```
+
 This data set is also available in a package called “airway” in
 bioconductor. It is saved as an S4 object (object oriented programming)
 that contains the count data, meta data, and other information important
@@ -452,6 +472,15 @@ microarray data.
 ``` r
 # Call airway data using data() and print airway data to save to workspace
 ```
+
+    class: RangedSummarizedExperiment 
+    dim: 6 8 
+    metadata(1): ''
+    assays(1): counts
+    rownames(6): ENSG00000000003 ENSG00000000005 ... ENSG00000000460 ENSG00000000938
+    rowData names(0):
+    colnames(8): SRR1039508 SRR1039509 ... SRR1039520 SRR1039521
+    colData names(9): SampleName cell ... Sample BioSample
 
 Since we imported the same data set twice, we can remove data from our
 workspace using the rm() function.
@@ -480,6 +509,18 @@ Hint: We will use the as.data.frame() function to do this.
 # Check mode of colData(airway) and make change the structure to a data frame.
 ```
 
+    DataFrame with 8 rows and 9 columns
+               SampleName     cell      dex    albut        Run avgLength Experiment    Sample    BioSample
+                 <factor> <factor> <factor> <factor>   <factor> <integer>   <factor>  <factor>     <factor>
+    SRR1039508 GSM1275862  N61311     untrt    untrt SRR1039508       126  SRX384345 SRS508568 SAMN02422669
+    SRR1039509 GSM1275863  N61311     trt      untrt SRR1039509       126  SRX384346 SRS508567 SAMN02422675
+    SRR1039512 GSM1275866  N052611    untrt    untrt SRR1039512       126  SRX384349 SRS508571 SAMN02422678
+    SRR1039513 GSM1275867  N052611    trt      untrt SRR1039513        87  SRX384350 SRS508572 SAMN02422670
+    SRR1039516 GSM1275870  N080611    untrt    untrt SRR1039516       120  SRX384353 SRS508575 SAMN02422682
+    SRR1039517 GSM1275871  N080611    trt      untrt SRR1039517       126  SRX384354 SRS508576 SAMN02422673
+    SRR1039520 GSM1275874  N061011    untrt    untrt SRR1039520       101  SRX384357 SRS508579 SAMN02422683
+    SRR1039521 GSM1275875  N061011    trt      untrt SRR1039521        98  SRX384358 SRS508580 SAMN02422677
+
 The count data is saved under the slot assay. We can extract the count
 matrix by calling <airway@assay> or assay(airway). We can also use
 descriptive statistics to look at the expression acrosss samples. We
@@ -494,8 +535,34 @@ colSums()
 
 ``` r
 # 1 Sum the expression of each column, divide by 1e6
+```
 
+``` r
+print(col_cpm)
+```
+
+    SRR1039508 SRR1039509 SRR1039512 SRR1039513 SRR1039516 SRR1039517 SRR1039520 SRR1039521 
+      20.63797   18.80948   25.34865   15.16342   24.44841   30.81821   19.12615   21.16413 
+
+``` r
 # 2 Use summary function to see the range of values between each sample
+```
+
+``` 
+   SRR1039508       SRR1039509         SRR1039512         SRR1039513         SRR1039516         SRR1039517      
+ Min.   :     0   Min.   :     0.0   Min.   :     0.0   Min.   :     0.0   Min.   :     0.0   Min.   :     0.0  
+ 1st Qu.:     0   1st Qu.:     0.0   1st Qu.:     0.0   1st Qu.:     0.0   1st Qu.:     0.0   1st Qu.:     0.0  
+ Median :     0   Median :     0.0   Median :     0.0   Median :     0.0   Median :     0.0   Median :     0.0  
+ Mean   :   322   Mean   :   293.4   Mean   :   395.4   Mean   :   236.6   Mean   :   381.4   Mean   :   480.8  
+ 3rd Qu.:    10   3rd Qu.:     8.0   3rd Qu.:    12.0   3rd Qu.:     6.0   3rd Qu.:    11.0   3rd Qu.:    12.0  
+ Max.   :297906   Max.   :255662.0   Max.   :513766.0   Max.   :273878.0   Max.   :397791.0   Max.   :401539.0  
+   SRR1039520         SRR1039521      
+ Min.   :     0.0   Min.   :     0.0  
+ 1st Qu.:     0.0   1st Qu.:     0.0  
+ Median :     0.0   Median :     0.0  
+ Mean   :   298.4   Mean   :   330.2  
+ 3rd Qu.:     9.0   3rd Qu.:     8.0  
+ Max.   :378834.0   Max.   :372489.0  
 ```
 
 We will use DESeq2 package for differential expression analysis of the
@@ -530,6 +597,15 @@ DE_airway <- DESeqDataSet(airway, design = ~ cell + dex)
 DE_airway
 ```
 
+    class: DESeqDataSet 
+    dim: 64102 8 
+    metadata(2): '' version
+    assays(1): counts
+    rownames(64102): ENSG00000000003 ENSG00000000005 ... LRG_98 LRG_99
+    rowData names(0):
+    colnames(8): SRR1039508 SRR1039509 ... SRR1039520 SRR1039521
+    colData names(9): SampleName cell ... Sample BioSample
+
 Before we continue, we must set our control group as our reference level
 for comparison in our differential expression analysis.
 
@@ -537,22 +613,21 @@ for comparison in our differential expression analysis.
 DE_airway@colData$dex <- relevel(DE_airway@colData$dex, ref = "untrt")
 ```
 
-Now we wil; run the differential expression analysis steps through the
+Now we will run the differential expression analysis steps through the
 function DESeq(). Again we can look up the function to learn more about
 what it does and the arguments needed to run it. We use the results()
 function to generate a results table with log2 fold changes, p values
 and adjusted p values for each gene. The log2 fold change and the Wald
 test p value is based on the last variable in the design formula, in
 this case variable dex. Therefore our results will show which genes are
-differentially expressed between the untreated and treated groups.
+deferentially expressed between the untreated and treated groups.
 
 ``` r
-help("DESeq")
-
 DE_airway <- DESeq(DE_airway)
-res <- results(DE_airway) 
+res <- results(DE_airway)
 
-head(res)
+# Make sure we keep these as a column for later
+res$ensembl <- rownames(res)
 ```
 
 How do we order the results table (res) based on the p-value? There are
@@ -562,6 +637,22 @@ Hint: Use function order() to order the rows based on p-value
 ``` r
 # Use order() to order the results table based on the p-value
 ```
+
+``` r
+head(res)
+```
+
+    log2 fold change (MLE): dex trt vs untrt 
+    Wald test p-value: dex trt vs untrt 
+    DataFrame with 6 rows and 7 columns
+                     baseMean log2FoldChange     lfcSE      stat       pvalue         padj         ensembl
+                    <numeric>      <numeric> <numeric> <numeric>    <numeric>    <numeric>     <character>
+    ENSG00000152583   997.440        4.57492  0.184056   24.8561 2.22232e-136 4.00640e-132 ENSG00000152583
+    ENSG00000165995   495.093        3.29106  0.133174   24.7125 7.83976e-135 7.06676e-131 ENSG00000165995
+    ENSG00000120129  3409.029        2.94781  0.121438   24.2743 3.66732e-130 2.20381e-126 ENSG00000120129
+    ENSG00000101347 12703.387        3.76700  0.155438   24.2347 9.58234e-130 4.31876e-126 ENSG00000101347
+    ENSG00000189221  2341.767        3.35358  0.141782   23.6530 1.09937e-123 3.96389e-120 ENSG00000189221
+    ENSG00000211445 12285.615        3.73040  0.165831   22.4953 4.61814e-112 1.38760e-108 ENSG00000211445
 
 In DESeq2, the function plotMA generates an MA Plot commonly used to
 visualize the differential expression results. The plot shows the log2
@@ -575,25 +666,34 @@ triangles pointing either up or down.
 plotMA(res, ylim=c(-2,2))
 ```
 
+![](workshop_files/figure-gfm/MA%20Plot-1.png)<!-- -->
+
 Let’s add a column that tell us whether each gene is significant. Using
 the mutate() function from library dplyr, we can add a column showing
 whether the significance is TRUE or FALSE based on cutoff padj \< 0.01.
 
 ``` r
 # Change res to a tibble format to work with dplyr
-
 res <- tbl_df(res)
 
 # Add sig column to show which genes are significant or not by using mutate() from dplyr
-
 res <- mutate(res, sig=padj<0.01)
 
 # We can use the symbol %>% from library magrittr to represent a pipe. Pipes take the output from one function and feed it to the first argument of the next function. You may have seen something similar in unix with |
-
 res <- res %>% mutate(sig=padj<0.01)
 
 head(res)
 ```
+
+    # A tibble: 6 × 8
+      baseMean log2FoldChange lfcSE  stat    pvalue      padj ensembl         sig  
+         <dbl>          <dbl> <dbl> <dbl>     <dbl>     <dbl> <chr>           <lgl>
+    1     997.           4.57 0.184  24.9 2.22e-136 4.01e-132 ENSG00000152583 TRUE 
+    2     495.           3.29 0.133  24.7 7.84e-135 7.07e-131 ENSG00000165995 TRUE 
+    3    3409.           2.95 0.121  24.3 3.67e-130 2.20e-126 ENSG00000120129 TRUE 
+    4   12703.           3.77 0.155  24.2 9.58e-130 4.32e-126 ENSG00000101347 TRUE 
+    5    2342.           3.35 0.142  23.7 1.10e-123 3.96e-120 ENSG00000189221 TRUE 
+    6   12286.           3.73 0.166  22.5 4.62e-112 1.39e-108 ENSG00000211445 TRUE 
 
 Let’s use the filter() function from dplyr to filter out results based
 on padj \< 0.01, and write this to a csv file using write\_csv()
@@ -605,9 +705,20 @@ Try using piping format %\>% to do this\!
 # Filter res based on cutoff padj < 0.01 and save this result into a csv file called significant_results.csv
 ```
 
+``` r
+res %>%
+dplyr::filter(padj < 0.01) %>%
+write_csv("significant_results.csv")
+```
+
 What if we want to generate our own plots? We can use ggplot2 to create
 our own volcano plot of the differential expression results between the
-untreated and treated groups.
+untreated and treated groups. Volcano plots are another common way to
+visualize differential expression results. It shows the log2 fold change
+on the x-axis and the log10-transformed adjusted p-value on the y-axis
+(`-1*log10(padj)`), with the points colored according to whether they
+are significant or not. We can use `ggplot` to create a volcano plot for
+our results.
 
 Now let’s try generating a volcano plot using ggplot2?
 
@@ -625,6 +736,8 @@ how ggplot2 works.
 # Create Volcano plot using ggplot2
 ```
 
+![](workshop_files/figure-gfm/unnamed-chunk-33-1.png)<!-- -->
+
 How would you generate the same MA plot above using ggplot2? Hint: Use
 baseMean for x-axis, log2FoldChange for y-axis, sig for color.
 
@@ -634,74 +747,174 @@ Make sure to have points and to use a log10 scale for the x-axis
 Add the title “MA plot” to your plot as well.
 
 ``` r
-# Create MA plot using ggplot2
+# Create an MA plot using ggplot2
 ```
 
-# Gene Set Enrichment using enrichR
+![](workshop_files/figure-gfm/unnamed-chunk-34-1.png)<!-- -->
 
-Gene set enrichment analysis (GSEA) is a method to identify classes of
-genes that are over-represented in a large set of genes. This is
-performed by comparing the input gene set with annotated gene sets from
-online functional databases such as `Gene Ontology (GO)
-<http://geneontology.org>`\_ and `KEGG <https://www.kegg.jp>`\_. This is
-a common step in bioinformatics as it aids with the biological
-interpretation of results.
+# Gene Set Enrichment Analysis
 
-In this section of the workshop, we will perform GSEA on the set of
-differentially-expressed genes we identified earlier in this workshop
-using the `enrichR
-<https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4987924/>`\_ tool. Please
-note that this section will require a working internet connection.
+Although we’ve identified differentially expressed genes, we don’t yet
+know whether the genes have an unifying biological connection. That’s
+where gene set enrichment analysis (GSEA) comes in. GSEA is a method to
+identify classes of gene that are over-represented in a large gene set.
+The calculated enrichment score (ES) reflects the degree to which a gene
+set is over-represented at the extremes (top or bottom) of the entire
+ranked list.
 
-Let’s start by keeping only the set of genes that showed
-statistically-significant change in expression between conditions.
-Remember from the previous section that our threshold is be a false
-discovery rate (FDR) of 0.1 (i.e. no more than 10% chance that the
-observed change in expression is due to chance). Not all the genes in
-the results from DESeq2 were assigned p-values so we’ll start by
-filtering out the genes without p-values followed by storing the
-significant genes separately.
+GSEA requires two inputs: 1) gene sets of biological pathways - A gene
+set should consist of all genes that are biological related or part of
+the same biological pathway. We can obtain these gene sets from the
+Molecular Signatures Database (MSigDB). 2) ranked list of genes of
+interest - We will be using our differentially expressed genes, ranked
+by their log2 fold change.
+
+## Downloading genesets
 
 ``` r
-# 1 Filter out  genes with no p-values
-
-# 2 Keep significant genes only
-
-# 3 How many significant genes did we get?
+library(msigdbr)
+msigdbr::msigdbr_species()
 ```
 
-There’s one more step before we carry out GSEA. The genes in this
-dataset use Ensembl indentifiers, while enrichR expects gene symbols.
-We’ll use the biomaRt package to map our Ensembl IDs to gene symbols.
+``` 
+# A tibble: 20 × 2
+   species_name                    species_common_name                                           
+   <chr>                           <chr>                                                         
+ 1 Anolis carolinensis             Carolina anole, green anole                                   
+ 2 Bos taurus                      bovine, cattle, cow, dairy cow, domestic cattle, domestic cow 
+ 3 Caenorhabditis elegans          roundworm                                                     
+ 4 Canis lupus familiaris          dog, dogs                                                     
+ 5 Danio rerio                     leopard danio, zebra danio, zebra fish, zebrafish             
+ 6 Drosophila melanogaster         fruit fly                                                     
+ 7 Equus caballus                  domestic horse, equine, horse                                 
+ 8 Felis catus                     cat, cats, domestic cat                                       
+ 9 Gallus gallus                   bantam, chicken, chickens, Gallus domesticus                  
+10 Homo sapiens                    human                                                         
+11 Macaca mulatta                  rhesus macaque, rhesus macaques, Rhesus monkey, rhesus monkeys
+12 Monodelphis domestica           gray short-tailed opossum                                     
+13 Mus musculus                    house mouse, mouse                                            
+14 Ornithorhynchus anatinus        duck-billed platypus, duckbill platypus, platypus             
+15 Pan troglodytes                 chimpanzee                                                    
+16 Rattus norvegicus               brown rat, Norway rat, rat, rats                              
+17 Saccharomyces cerevisiae        baker's yeast, brewer's yeast, S. cerevisiae                  
+18 Schizosaccharomyces pombe 972h- <NA>                                                          
+19 Sus scrofa                      pig, pigs, swine, wild boar                                   
+20 Xenopus tropicalis              tropical clawed frog, western clawed frog                     
+```
 
 ``` r
-# 1 Load package (remember to install it if you haven't)
+# Download genesets
+mdf <- msigdbr("Homo sapiens", category="H") %>%
+    dplyr::select(gs_name, ensembl_gene) %>%
+    dplyr::distinct()
 
-# 2 Load human reference genome
-
-# 3 Map Ensembl IDs  to gene symbols (might take a couple of minutes)
+# Convert to list
+gsets <- split(mdf$ensembl_gene, mdf$gs_name)
 ```
-
-Now that we have our correctly-formatted gene symbols, we can perform
-GSEA. There are many different databases we can use for this step; for
-this workshop we will use the Gene Ontology (GO) databases: GO
-Biological Process, GO Molecular Function, and GO Cellular Component.
 
 ``` r
-# 1 Find the list of all available databases from Enrichr
-
-# 2 Scroll through list of available databases
-
-# 3 Set up list with databases of interest
-
-# 4 Perform GSEA
-
-# 5 Check first few results for the biological process database
+head(names(gsets))
 ```
 
-To conclude, we can look at our session information including the
-packages we loaded and worked with.
+``` 
+[1] "HALLMARK_ADIPOGENESIS"        "HALLMARK_ALLOGRAFT_REJECTION" "HALLMARK_ANDROGEN_RESPONSE"  
+[4] "HALLMARK_ANGIOGENESIS"        "HALLMARK_APICAL_JUNCTION"     "HALLMARK_APICAL_SURFACE"     
+```
 
 ``` r
-sessionInfo()
+head(gsets$HALLMARK_APOPTOSIS)
 ```
+
+    [1] "ENSG00000087274" "ENSG00000183773" "ENSG00000154122" "ENSG00000135046" "ENSG00000142192" "ENSG00000162772"
+
+## A signature of differentially expressed genes
+
+``` r
+# Filter significant genes only (padj < 0.01). How many significant genes did we get?
+```
+
+``` r
+nrow(res.sig)
+```
+
+    [1] 2902
+
+``` r
+# Create a named vector of genes sorted by their log fold change
+```
+
+``` r
+head(res.sig.ranked)
+```
+
+    ENSG00000179593 ENSG00000109906 ENSG00000250978 ENSG00000132518 ENSG00000127954 ENSG00000249364 
+           9.505972        7.352628        6.327384        5.885112        5.207160        5.098107 
+
+``` r
+tail(res.sig.ranked)
+```
+
+    ENSG00000141469 ENSG00000146006 ENSG00000183454 ENSG00000019186 ENSG00000267339 ENSG00000128285 
+          -4.124784       -4.211850       -4.264077       -4.325907       -4.611550       -5.325905 
+
+## Fast GSEA
+
+``` r
+library(fgsea)
+fgseaRes <- fgsea(pathways=gsets, stats=res.sig.ranked, nperm=500)
+head(fgseaRes[order(pval), ])
+```
+
+``` 
+                              pathway        pval      padj         ES       NES nMoreExtreme size
+1:              HALLMARK_ADIPOGENESIS 0.003322259 0.1661130  0.4094747  1.688340            0   53
+2:         HALLMARK_KRAS_SIGNALING_DN 0.010830325 0.2707581  0.4946620  1.739639            2   25
+3:           HALLMARK_HEME_METABOLISM 0.034146341 0.3981797 -0.3279139 -1.411094            6   48
+4:       HALLMARK_ALLOGRAFT_REJECTION 0.048245614 0.3981797 -0.3845686 -1.489387           10   29
+5:     HALLMARK_FATTY_ACID_METABOLISM 0.050179211 0.3981797  0.4031314  1.462973           13   30
+6: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.055837563 0.3981797 -0.3038181 -1.333474           10   52
+                                                                                           leadingEdge
+1: ENSG00000152583,ENSG00000211445,ENSG00000170323,ENSG00000174697,ENSG00000095637,ENSG00000127083,...
+2: ENSG00000109906,ENSG00000100033,ENSG00000162267,ENSG00000070388,ENSG00000115457,ENSG00000137959,...
+3: ENSG00000165272,ENSG00000123405,ENSG00000183508,ENSG00000196517,ENSG00000102575,ENSG00000155962,...
+4: ENSG00000108688,ENSG00000128342,ENSG00000168811,ENSG00000160223,ENSG00000092969,ENSG00000140105,...
+5: ENSG00000189221,ENSG00000135821,ENSG00000154930,ENSG00000151726,ENSG00000241644,ENSG00000248144,...
+6: ENSG00000162692,ENSG00000108688,ENSG00000123610,ENSG00000116711,ENSG00000185745,ENSG00000168062,...
+```
+
+``` r
+plotEnrichment(gsets$HALLMARK_XENOBIOTIC_METABOLISM, res.sig.ranked)
+```
+
+![](workshop_files/figure-gfm/unnamed-chunk-44-1.png)<!-- -->
+
+## Gene Symbols
+
+Uh oh… our differential expression data has ensembl ids for gene names
+and our genesets have hugo symbols. What if we need to convert out ids
+to symbols? Fortunately biomaRt makes this quite painless.
+
+``` r
+library(biomaRt)
+ids <- names(res.sig.ranked)
+ensembl <- biomaRt::useMart("ensembl", dataset="hsapiens_gene_ensembl")
+conversion <- biomaRt::getBM(attributes=c("ensembl_gene_id", "hgnc_symbol"), values=ids, mart=ensembl)
+head(conversion)
+```
+
+``` 
+  ensembl_gene_id hgnc_symbol
+1 ENSG00000210049       MT-TF
+2 ENSG00000211459     MT-RNR1
+3 ENSG00000210077       MT-TV
+4 ENSG00000210082     MT-RNR2
+5 ENSG00000209082      MT-TL1
+6 ENSG00000198888      MT-ND1
+```
+
+``` r
+symbols <- conversion$hgnc_symbol[match(ids, conversion$ensembl_gene_id)]
+head(symbols, 5)
+```
+
+    [1] "ALOX15B" "ZBTB16"  ""        "GUCY2D"  "STEAP4"
