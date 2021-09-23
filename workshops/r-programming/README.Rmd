@@ -12,24 +12,23 @@ output:
 knitr::opts_chunk$set(message=FALSE, comment="")
 ```
 
-R is a free programming language for statistical computing and graphics. It is an implementation of the S programming language and was created by Ross Ihaka and Robert Gentleman at the Univeristy of Auckland, New Zealand. R is currently developed by the R Development Core Team. RStudio is an Integrated Development Environment (IDE) for R.
-
 ## Getting Started
-Open RStudio locally and learn how to use the [RStudio interface](https://www.youtube.com/watch?v=jAgbZ8jkBtQ).
+R is a free programming language for statistical computing and graphics. It is an implementation of the S programming language and was created by Ross Ihaka and Robert Gentleman at the University of Auckland, New Zealand. R is currently developed by the R Development Core Team. RStudio is an Integrated Development Environment (IDE) for R.
 
 ## The Basics
 
-We can use R as a calculator to do simple math operations such as addition (+), subtraction (-), multiplication (*), division (\), and raise a value to a power (^). We can type these calculations in the console or run them in an R script that extension ends in .R 
+We can use R as a calculator to do simple math operations such as addition `+`, subtraction `-`, multiplication `*`, division `\`, and raise a value to a power `^`. We can type these calculations in the console or run them in an R script that extension ends in `.R` 
 
 ```{r}
 # We can use hashtags to make comments about our code
-#
-# or do some basic operations
+```
 
+```{r}
 4 + 5
 4 - 5
 4 * 5
-4/5
+4 / 5
+4 ^ 5
 ```
 
 ### Data Structures
@@ -55,9 +54,9 @@ The major data structures include:
 
 ### Scalars
 
-The simplest type of object is a scalar which is an object with one value. We can assign a value or calculations to a variable using the assignment operator "<-". 
+The simplest type of object is a scalar which is an object with one value. We can assign a value or calculations to a variable using the assignment operator `<-`. 
 
-Note: The equals sign "=" is not an assignment operator in R and has a different functionality which will be discussed further below.
+Note: The equals sign `=` is not an assignment operator in R and has a different functionality which will be discussed further below.
 
 To create scalar data objects x and y:
 
@@ -329,4 +328,233 @@ for (i in 1:10) {
 }
 
 y
+```
+
+## Advanced
+### Tidyverse
+
+One of the best advantages of R is it's unique ability to work with data. [Tidyverse](https://www.rstudio.com/wp-content/uploads/2015/02/data-wrangling-cheatsheet.pdf) is a collection of packages for wrangling and visualizing data for statistical analysis. These are the packages you will likely use on a day to day basis in bioinformatics.
+
+```{r}
+library(magrittr)
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(janitor)
+library(glue)
+library(reshape2)
+library(ggplot2)
+```
+
+Or just call them all...
+
+```{r}
+library(tidyverse)
+```
+
+```{r include=FALSE}
+library(palmerpenguins)
+df <- penguins
+# What if the names were ugly?
+colnames(df) <- c("Species", "ISLAND", "Bill_Length$(MM)", "bill.depth.mm", "flipper.length.mm", "body.mass.(g)", "SEX", "YEAR")
+head(df)
+dim(df)
+```
+
+### `janitor`
+
+Look at how ugly these column names are...
+
+```{r}
+head(df)
+```
+
+Clean them with `janitor`
+
+```{r}
+df <- janitor::clean_names(df)
+colnames(df)
+head(df)
+```
+
+Get a summary of the data
+
+```{r}
+summary(penguins)
+```
+
+### `magrittr` 
+
+**`%>%`**
+
+Here we want to find the average bill length in inches.
+
+```{r}
+# Fine
+mean_bill_length_in <- mean(df$bill_length_mm * 0.0393701, na.rm=TRUE)
+print(mean_bill_length_in)
+# Better
+mean_bill_length_in <- df %>%
+  dplyr::pull(bill_length_mm) %>%
+  magrittr::multiply_by(0.0393701) %>%
+  mean(na.rm=TRUE)
+print(mean_bill_length_in)
+```
+
+**`set_colnames()`**
+```{r}
+df %>%
+magrittr::set_colnames(paste0("Column_", seq(ncol(.)))) %>%
+head()
+```
+
+You can also insert short hand functions!
+
+```{r}
+df %>%
+dplyr::pull(bill_length_mm) %>%
+(function(x) {
+  return(x * 0.0393701)
+}) %>%
+mean(na.rm=TRUE)
+```
+
+### `dplyr`
+
+Please check out the [full reference](https://dplyr.tidyverse.org/reference/index.html) for more functions
+
+**`mutate()`**
+
+Modify a new or existing column
+
+```{r}
+df %>%
+dplyr::mutate(bill_length_in = bill_length_mm * 0.0393701) %>%
+head()
+```
+
+**`filter()`**
+
+Filter rows
+
+```{r}
+df %>%
+dplyr::filter(species == "Chinstrap") %>%
+head()
+```
+
+**`select()`**
+
+Select columns
+
+```{r}
+df %>%
+dplyr::select(species, body_mass_g) %>%
+head()
+```
+
+**`pull()`**
+
+Select columns and flatten to vector
+
+```{r}
+df %>%
+dplyr::pull(body_mass_g) %>%
+head()
+```
+
+**`arrange()`**
+
+Order rows
+
+```{r}
+df %>%
+dplyr::arrange(desc(body_mass_g)) %>%
+head()
+```
+
+**`across()`**
+
+Apply function across columns
+
+```{r}
+df %>%
+dplyr::mutate(dplyr::across(c(bill_length_mm, bill_depth_mm), round)) %>%
+head()
+```
+
+**`group_by()` + `summarise()`**
+Group by columns and compute summary statistics
+
+```{r}
+df %>%
+dplyr::group_by(species) %>%
+dplyr::summarise(n=n(), mass=mean(body_mass_g, na.rm=TRUE))
+```
+
+**Conditional mutate**
+```{r}
+df %>%
+dplyr::mutate(body_size=
+      dplyr::case_when(body_mass_g > 5000 ~ "Massive",
+                       body_mass_g > 4000 ~ "Big",
+                       TRUE ~ "Small")) %>%
+dplyr::pull(body_size) %>%
+table()
+```
+
+### `purrr`
+
+**Mutate with two or more columns**
+```{r}
+df.xyz <- data.frame(x=c(1,3), y=c(1,3), z=c(1,3))
+head(df.xyz)
+df.xyz <- df.xyz %>%
+      dplyr::mutate(xyz = purrr::pmap(list(x, y, z), function(a, b, c) {
+          a + b + c
+      }))
+head(df.xyz)
+```
+
+### `glue`
+
+String manipulation and formatting
+
+```{r}
+name <- "Fred"
+glue('My name is {name}.')
+```
+
+```{r}
+df %>%
+dplyr::select(species, bill_length_mm, sex) %>%
+tidyr::drop_na() %>%
+dplyr::mutate(desc = glue("This {sex} penguin ({species}) has a bill length of {bill_length_mm} mm")) %>%
+head()
+```
+
+### `reshape2`
+
+**`melt()`**
+
+Melt a data frame for visualization
+
+```{r}
+df %>%
+dplyr::select(species, bill_length_mm, bill_depth_mm) %>%
+reshape2::melt(id=c("species")) %>%
+head(5)
+```
+
+### `ggplot2`
+
+Melted data frames are good for plotting
+
+```{r warning=FALSE}
+df %>%
+dplyr::select(species, bill_length_mm, bill_depth_mm) %>%
+reshape2::melt(id=c("species")) %>%
+ggplot(aes(x=variable, y=value, color=species)) +
+labs(x="", y="Length (mm)") +
+geom_boxplot()
 ```
