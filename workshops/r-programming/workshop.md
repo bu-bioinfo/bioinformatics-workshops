@@ -16,9 +16,10 @@ R Workshop: RNA-seq Airway Data and Differential Expression Analysis
       - [Wrapper functions](#wrapper-functions)
       - [Apply loops](#apply-loops)
       - [Matrix operations](#matrix-operations)
-  - [Loading data from an R package](#loading-data-from-an-r-package)
-  - [Install packages from
-    Bioconductor](#install-packages-from-bioconductor)
+  - [Differential Expression
+    Analysis](#differential-expression-analysis)
+      - [Install packages from
+        Bioconductor](#install-packages-from-bioconductor)
   - [Gene Set Enrichment Analysis](#gene-set-enrichment-analysis)
       - [Downloading genesets](#downloading-genesets)
       - [A signature of differentially expressed
@@ -439,9 +440,9 @@ indepedently test the relationships to \(X\).
 # 1 Use the formula for the maximum likelihood estimates of linear regression coefficients above to estimate the difference in log transformed expression values between treated and control samples for the first 1000 genes in `scaledcounts`.
 ```
 
-# Loading data from an R package
+# Differential Expression Analysis
 
-# Install packages from Bioconductor
+## Install packages from Bioconductor
 
 ``` r
 install.packages("BiocManager")
@@ -705,12 +706,6 @@ Try using piping format %\>% to do this\!
 # Filter res based on cutoff padj < 0.01 and save this result into a csv file called significant_results.csv
 ```
 
-``` r
-res %>%
-dplyr::filter(padj < 0.01) %>%
-write_csv("significant_results.csv")
-```
-
 What if we want to generate our own plots? We can use ggplot2 to create
 our own volcano plot of the differential expression results between the
 untreated and treated groups. Volcano plots are another common way to
@@ -866,13 +861,13 @@ head(fgseaRes[order(pval), ])
 ```
 
 ``` 
-                              pathway        pval      padj         ES       NES nMoreExtreme size
-1:              HALLMARK_ADIPOGENESIS 0.003322259 0.1661130  0.4094747  1.688340            0   53
-2:         HALLMARK_KRAS_SIGNALING_DN 0.010830325 0.2707581  0.4946620  1.739639            2   25
-3:           HALLMARK_HEME_METABOLISM 0.034146341 0.3981797 -0.3279139 -1.411094            6   48
-4:       HALLMARK_ALLOGRAFT_REJECTION 0.048245614 0.3981797 -0.3845686 -1.489387           10   29
-5:     HALLMARK_FATTY_ACID_METABOLISM 0.050179211 0.3981797  0.4031314  1.462973           13   30
-6: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.055837563 0.3981797 -0.3038181 -1.333474           10   52
+                              pathway       pval      padj         ES       NES nMoreExtreme size
+1:              HALLMARK_ADIPOGENESIS 0.01587302 0.4281208  0.4094747  1.634831            4   53
+2:         HALLMARK_KRAS_SIGNALING_DN 0.02693603 0.4281208  0.4946620  1.692520            7   25
+3:           HALLMARK_HEME_METABOLISM 0.04210526 0.4281208 -0.3279139 -1.432248            7   48
+4:       HALLMARK_ALLOGRAFT_REJECTION 0.05555556 0.4281208 -0.3845686 -1.473791           10   29
+5:     HALLMARK_FATTY_ACID_METABOLISM 0.08143322 0.4281208  0.4031314  1.459585           24   30
+6: HALLMARK_INTERFERON_GAMMA_RESPONSE 0.08196721 0.4281208 -0.3038181 -1.317148           14   52
                                                                                            leadingEdge
 1: ENSG00000152583,ENSG00000211445,ENSG00000170323,ENSG00000174697,ENSG00000095637,ENSG00000127083,...
 2: ENSG00000109906,ENSG00000100033,ENSG00000162267,ENSG00000070388,ENSG00000115457,ENSG00000137959,...

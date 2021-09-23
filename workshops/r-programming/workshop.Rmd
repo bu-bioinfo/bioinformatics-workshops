@@ -315,10 +315,9 @@ In actuality, $y$ need not be a vector, but instead a $N \times Q$ matrix, where
 # 1 Use the formula for the maximum likelihood estimates of linear regression coefficients above to estimate the difference in log transformed expression values between treated and control samples for the first 1000 genes in `scaledcounts`.
 ```
 
+# Differential Expression Analysis
 
-# Loading data from an R package
-
-# Install packages from Bioconductor
+## Install packages from Bioconductor
 ```{r, eval=FALSE}
 install.packages("BiocManager")
 BiocManager::install("SummarizedExperiment")
@@ -485,7 +484,7 @@ Try using piping format %>% to do this!
 # Filter res based on cutoff padj < 0.01 and save this result into a csv file called significant_results.csv
 ```
 
-```{r eval=FALSE}
+```{r echo=FALSE, eval=FALSE}
 res %>%
 dplyr::filter(padj < 0.01) %>%
 write_csv("significant_results.csv")
