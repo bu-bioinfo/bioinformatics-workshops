@@ -1,0 +1,9 @@
+datasets: ['pbmc3k', 'paul', 'moignard']
+preprocess:
+  min_cells: 3
+  min_genes: 200
+  pct_mito: 5
+  n_hvgs: 2000
+cluster:
+  k: 15
+  resolution: 1
