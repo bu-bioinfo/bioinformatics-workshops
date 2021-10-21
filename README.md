@@ -20,8 +20,8 @@
 #### 5. [Data visualization](workshops/data-visualization)
 *Data visualization in R and Python*
 
-#### 6. [Machine learning]
-*Desc*
+#### 6. [Machine learning](workshops/machine-learning)
+
 
 #### 7. [SQL]
 *SQL "ess-que-el" stands for Structure Query Language. It is a programming language for designing and querying relational databases.*
